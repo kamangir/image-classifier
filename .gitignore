@@ -8,3 +8,4 @@ train_30
 validation
 vegetables_checkpoint_30_percent
 .DS_Store
+helper_functions.py.*
