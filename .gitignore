@@ -1,3 +1,8 @@
 __pycache__
 *.zip?dl=0
 .ipynb_checkpoints
+__MACOSX
+test
+train
+train_30
+validation
