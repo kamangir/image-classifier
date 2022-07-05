@@ -1,4 +1,4 @@
-# vegetables-classification
+# image-classifier
 
 ![image](https://user-images.githubusercontent.com/1007567/173676989-dc9ee636-fc55-4224-b4a2-25af51f6d685.png)
 

@@ -1,11 +1,6 @@
-__pycache__
-*.zip?dl=0
 .ipynb_checkpoints
-__MACOSX
-test
-train
-train_30
-validation
-vegetables_checkpoint_30_percent
+__pycache__
 .DS_Store
-helper_functions.py.*
+*.egg-info
+*.log
+, .json
