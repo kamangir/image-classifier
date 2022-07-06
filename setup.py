@@ -1,6 +1,6 @@
 from setuptools import setup
 
-from awesome_bash_cli_template import *
+from image_classifier import *
 
 setup(
     name=name,
