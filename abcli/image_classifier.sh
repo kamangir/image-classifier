@@ -20,7 +20,7 @@ function abcli_image_classifier() {
         if [ "$what" == "vegetable-images" ] ; then
             wget https://www.dropbox.com/s/lbqzfovdqs02nr8/vegetable-images.zip?dl=0
             unzip vegetable-images.zip
-        elif
+        else
             abcli_log_error "-image_classifier: ingest: $what: source not found."
         fi
         return
