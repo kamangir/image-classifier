@@ -1,5 +1,5 @@
 name = "image_classifier"
 
-version = "1.1.29"
+version = "1.1.31"
 
 description = "a tensorflow image classifier"
