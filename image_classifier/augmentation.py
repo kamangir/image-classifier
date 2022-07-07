@@ -50,21 +50,22 @@ def create_layer(
 
         target_class = random.choice(data.class_names)
         target_dir = os.path.join(data_object, "train", target_class)
-        random_image = random.choice(os.listdir(target_dir))
-        random_image_path = target_dir + "/" + random_image
+
+        image = mpimg.imread(
+            os.path.join(target_dir, random.choice(os.listdir(target_dir)))
+        )
 
         plt.figure(figsize=(10, 15))
-
-        image = mpimg.imread(random_image_path)
         plt.subplot(1, 2, 1)
         plt.imshow(image)
-        plt.title(f"The original random image from class: {target_class}")
+        plt.title(f"random {target_class}")
         plt.axis(False)
 
-        augmented_image = layer(tf.expand_dims(image, axis=0), training=True)
         plt.subplot(1, 2, 2)
-        plt.imshow(tf.squeeze(augmented_image / 255.0))
-        plt.title(f"Augmented Image")
+        plt.imshow(
+            tf.squeeze(layer(tf.expand_dims(image, axis=0), training=True) / 255.0)
+        )
+        plt.title("augmentation output")
         plt.axis(False)
 
     return layer
