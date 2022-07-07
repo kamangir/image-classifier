@@ -50,6 +50,26 @@ class Image_Classifier(object):
         if log_level >= LOG_ON:
             print(self.model.summary())
 
+    def evaluate(
+        self,
+        input_object,
+        test_set="test",
+    ):
+        self.model.compile(
+            loss="categorical_crossentropy",
+            optimizer=tf.keras.optimizers.Adam(),
+            metrics=["accuracy"],
+        )
+
+        test_data = tf.keras.preprocessing.image_dataset_from_directory(
+            os.path.join(input_object, test_set),
+            image_size=(224, 224),
+            label_mode="categorical",
+            seed=42,
+        )
+
+        return self.model.evaluate(test_data)
+
     def fit(
         self,
         input_object,
@@ -62,12 +82,6 @@ class Image_Classifier(object):
         plot_level=plot_level,
         evaluate=True,
     ):
-        self.model.compile(
-            loss="categorical_crossentropy",
-            optimizer=tf.keras.optimizers.Adam(),
-            metrics=["accuracy"],
-        )
-
         train_data = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(input_object, train_set),
             image_size=(224, 224),
@@ -80,15 +94,11 @@ class Image_Classifier(object):
             label_mode="categorical",
             seed=42,
         )
-        test_data = tf.keras.preprocessing.image_dataset_from_directory(
-            os.path.join(input_object, test_set),
-            image_size=(224, 224),
-            label_mode="categorical",
-            seed=42,
-        )
 
         # to speed up - also: callback checkpoints saves don't work w/ load_weight.
-        checkpoint_path = os.path.join(output_object, "checkpoint/checkpoint.ckpt")
+        checkpoint_path = os.path.join(
+            output_object, "image_classifier/checkpoint.ckpt"
+        )
 
         # checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
         #    filepath=checkpoint_path,
@@ -113,4 +123,18 @@ class Image_Classifier(object):
             plot_loss_curves(self.history)
 
         if evaluate:
-            results = self.model.evaluate(test_data)
+            self.evaluate(input_object=input_object, test_set=test_set)
+
+    def load_weights(
+        self,
+        input_object,
+        output_object,
+        test_set="test",
+        evaluate=False,
+    ):
+        self.model.load_weights(
+            os.path.join(output_object, "image_classifier/checkpoint.ckpt")
+        )
+
+        if evaluate:
+            self.evaluate(input_object=input_object, test_set=test_set)
