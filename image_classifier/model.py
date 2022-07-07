@@ -1,4 +1,7 @@
-from numpy import e
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import numpy as np
+import random
 import tensorflow as tf
 from tensorflow.keras import layers
 from helper_functions import plot_loss_curves
@@ -47,6 +50,8 @@ class Image_Classifier(object):
 
         self.model = tf.keras.Model(self.inputs, self.outputs)
 
+        self.evaluation = None
+
         if log_level >= LOG_ON:
             print(self.model.summary())
 
@@ -68,7 +73,7 @@ class Image_Classifier(object):
             seed=42,
         )
 
-        return self.model.evaluate(test_data)
+        self.evaluation = self.model.evaluate(test_data)
 
     def fit(
         self,
@@ -137,4 +142,44 @@ class Image_Classifier(object):
         )
 
         if evaluate:
-            return self.evaluate(input_object=input_object, test_set=test_set)
+            self.evaluate(input_object=input_object, test_set=test_set)
+
+    def predict_random_image(
+        self,
+        input_object,
+        log_level=log_level,
+        plot_level=plot_level,
+    ):
+        data = tf.keras.preprocessing.image_dataset_from_directory(
+            os.path.join(input_object, "train"),
+            image_size=(224, 224),
+            label_mode="categorical",
+            seed=42,
+        )
+
+        target_class = random.choice(data.class_names)
+        target_dir = os.path.join(input_object, "train", target_class)
+
+        image = mpimg.imread(
+            os.path.join(target_dir, random.choice(os.listdir(target_dir)))
+        )
+
+        confidence = tf.squeeze(
+            self.model(
+                tf.expand_dims(image, axis=0),
+                training=True,
+            )
+        )
+        index = np.argmax(confidence)
+
+        message = f"{target_class} -model-> {data.class_names[index]} ({confidence[index]:.2f})"
+
+        if plot_level >= PLOT_ON:
+            logger.info(message)
+
+        if log_level >= LOG_ON:
+            plt.figure(figsize=(10, 10))
+            plt.imshow(image)
+            plt.title(message)
+            plt.axis(False)
+            plt.show()
