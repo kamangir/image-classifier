@@ -6,5 +6,5 @@ A state-of-the-art fully customizable TensorFlow image classifier w/ a bash cli.
 
 ---
 
-- this repo is based on the [Transfer Learning EfficientNetB0](https://www.kaggle.com/code/moiscmig/transfer-learning-efficientnetb0-99) solution for [Kaggle vegetable classification and recognition](https://www.kaggle.com/datasets/misrakahmed/vegetable-image-dataset).
+- this repo is based on the [Transfer Learning EfficientNetB0](https://www.kaggle.com/code/moiscmig/transfer-learning-efficientnetb0-99) solution for [Kaggle vegetable classification and recognition](https://www.kaggle.com/datasets/misrakahmed/vegetable-image-dataset) - purpose: classify 15 different types of vegetables using transfer learning. 
 - this repo uses the [train/predict/eval+ingest model](https://gist.github.com/kamangir/7089b3579923f6aa226e459eb3292117) for deep vision models - here is [more](https://arash-kamangir.medium.com/training-prediction-and-evaluation-of-machine-visions-models-in-validation-mode-fa255f7811ad).
