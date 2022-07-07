@@ -137,4 +137,4 @@ class Image_Classifier(object):
         )
 
         if evaluate:
-            self.evaluate(input_object=input_object, test_set=test_set)
+            return self.evaluate(input_object=input_object, test_set=test_set)
