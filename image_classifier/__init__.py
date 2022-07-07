@@ -1,5 +1,7 @@
 name = "image_classifier"
 
-version = "1.1.31"
+version = "1.1.32"
 
-description = "a tensorflow image classifier"
+description = (
+    "A state-of-the-art fully customizable TensorFlow image classifier w/ a bash cli."
+)
