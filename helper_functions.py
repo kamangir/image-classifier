@@ -265,30 +265,6 @@ def compare_historys(original_history, new_history, initial_epochs=5):
     plt.show()
 
 
-# Walk through an image classification directory and find out how many files (images)
-# are in each subdirectory.
-import os
-
-
-def walk_through_dir(dir_path):
-    """
-    Walks through dir_path returning its contents.
-
-    Args:
-      dir_path (str): target directory
-
-    Returns:
-      A print out of:
-        number of subdiretories in dir_path
-        number of images (files) in each subdirectory
-        name of each subdirectory
-    """
-    for dirpath, dirnames, filenames in os.walk(dir_path):
-        print(
-            f"There are {len(dirnames)} directories and {len(filenames)} images in '{dirpath}'."
-        )
-
-
 # Function to evaluate: accuracy, precision, recall, f1-score
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
@@ -316,3 +292,81 @@ def calculate_results(y_true, y_pred):
         "f1": model_f1,
     }
     return model_results
+
+
+# Let's create a function to compare training histories
+def compare_histories(original_history, new_history, initial_epochs):
+    """
+    Compares two TensorFlow History Objects
+    """
+
+    # Get original history measurements
+    acc = original_history.history["accuracy"]
+    loss = original_history.history["loss"]
+
+    val_acc = original_history.history["val_accuracy"]
+    val_loss = original_history.history["val_loss"]
+
+    # Combine original history metrics with new history metrics
+    total_acc = acc + new_history.history["accuracy"]
+    total_loss = loss + new_history.history["loss"]
+
+    total_val_acc = val_acc + new_history.history["val_accuracy"]
+    total_val_loss = val_loss + new_history.history["val_loss"]
+
+    # Make plot for accuracy
+    plt.figure(figsize=(8, 8))
+
+    plt.subplot(2, 1, 1)
+    plt.plot(total_acc, label="Trainig Acc")
+    plt.plot(total_val_acc, label="Validation Accuracy")
+    plt.plot(
+        [initial_epochs - 1, initial_epochs - 1], plt.ylim(), label="Start Fine Tuning"
+    )
+    plt.legend(loc="lower right")
+    plt.title("Training and validation accuracy")
+
+    # Make plot for loss
+    plt.figure(figsize=(8, 8))
+
+    plt.subplot(2, 1, 2)
+    plt.plot(total_loss, label="Training Loss")
+    plt.plot(total_val_loss, label="Validation loss")
+    plt.plot(
+        [initial_epochs - 1, initial_epochs - 1], plt.ylim(), label="Start Fine Tuning"
+    )
+    plt.legend(loc="upper right")
+    plt.title("Training and validation loss")
+
+
+import os
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import random
+
+# Set random states
+# random.seed(42)
+# tf.random.set_seed(42)
+
+
+def view_random_image(input_object, train_data, data_augmentation):
+    target_class = random.choice(train_data.class_names)
+    target_dir = os.path.join(input_object, "train", target_class)
+    random_image = random.choice(os.listdir(target_dir))
+    random_image_path = target_dir + "/" + random_image
+
+    plt.figure(figsize=(10, 15))
+
+    # Read in random image
+    image = mpimg.imread(random_image_path)
+    plt.subplot(1, 2, 1)
+    plt.imshow(image)
+    plt.title(f"The original random image from class: {target_class}")
+    plt.axis(False)
+
+    # Now plot the augmented random image
+    augmented_image = data_augmentation(tf.expand_dims(image, axis=0), training=True)
+    plt.subplot(1, 2, 2)
+    plt.imshow(tf.squeeze(augmented_image / 255.0))
+    plt.title(f"Augmented Image")
+    plt.axis(False)
