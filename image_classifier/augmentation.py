@@ -12,15 +12,15 @@ logger = logging.getLogger(__name__)
 
 def create_layer(
     factor=0.2,
-    plot_level=plot_level,
     name="data_augmentation_layer",
     data_object="",
+    log_level=log_level,
+    plot_level=plot_level,
 ):
     """create augmentation layer.
 
     Args:
         factor (float, optional): augmentation factor. Defaults to 0.2.
-        plot_level (int, optional): plot level. Defaults to plot_level.
         name (str, optional): layer name. Defaults to "data_augmentation_layer".
         data_object (str, optional): data object. Defaults to "".
 
