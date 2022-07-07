@@ -337,36 +337,3 @@ def compare_histories(original_history, new_history, initial_epochs):
     )
     plt.legend(loc="upper right")
     plt.title("Training and validation loss")
-
-
-import os
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import random
-
-# Set random states
-# random.seed(42)
-# tf.random.set_seed(42)
-
-
-def view_random_image(input_object, train_data, data_augmentation):
-    target_class = random.choice(train_data.class_names)
-    target_dir = os.path.join(input_object, "train", target_class)
-    random_image = random.choice(os.listdir(target_dir))
-    random_image_path = target_dir + "/" + random_image
-
-    plt.figure(figsize=(10, 15))
-
-    # Read in random image
-    image = mpimg.imread(random_image_path)
-    plt.subplot(1, 2, 1)
-    plt.imshow(image)
-    plt.title(f"The original random image from class: {target_class}")
-    plt.axis(False)
-
-    # Now plot the augmented random image
-    augmented_image = data_augmentation(tf.expand_dims(image, axis=0), training=True)
-    plt.subplot(1, 2, 2)
-    plt.imshow(tf.squeeze(augmented_image / 255.0))
-    plt.title(f"Augmented Image")
-    plt.axis(False)
