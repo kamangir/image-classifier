@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def create_layer(
     factor=0.2,
     name="data_augmentation_layer",
-    data_object="",
+    input_object="",
     log_level=log_level,
     plot_level=plot_level,
 ):
@@ -22,7 +22,7 @@ def create_layer(
     Args:
         factor (float, optional): augmentation factor. Defaults to 0.2.
         name (str, optional): layer name. Defaults to "data_augmentation_layer".
-        data_object (str, optional): data object. Defaults to "".
+        input_object (str, optional): data object. Defaults to "".
 
     Returns:
         tf.keras.Sequential: augmentation layer.
@@ -42,14 +42,14 @@ def create_layer(
 
     if plot_level >= PLOT_ON:
         data = tf.keras.preprocessing.image_dataset_from_directory(
-            os.path.join(data_object, "train"),
+            os.path.join(input_object, "train"),
             image_size=(224, 224),
             label_mode="categorical",
             seed=42,
         )
 
         target_class = random.choice(data.class_names)
-        target_dir = os.path.join(data_object, "train", target_class)
+        target_dir = os.path.join(input_object, "train", target_class)
 
         image = mpimg.imread(
             os.path.join(target_dir, random.choice(os.listdir(target_dir)))
