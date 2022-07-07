@@ -14,7 +14,6 @@ def create_layer(
     factor=0.2,
     plot_level=plot_level,
     name="data_augmentation_layer",
-    data=None,
     data_object="",
 ):
     """create augmentation layer.
@@ -23,7 +22,6 @@ def create_layer(
         factor (float, optional): augmentation factor. Defaults to 0.2.
         plot_level (int, optional): plot level. Defaults to plot_level.
         name (str, optional): layer name. Defaults to "data_augmentation_layer".
-        data (tf.keras.preprocessing.image_dataset, optional): data. Defaults to None.
         data_object (str, optional): data object. Defaults to "".
 
     Returns:
@@ -43,6 +41,13 @@ def create_layer(
     )
 
     if plot_level >= PLOT_ON:
+        data = tf.keras.preprocessing.image_dataset_from_directory(
+            os.path.join(data_object, "train"),
+            image_size=(224, 224),
+            label_mode="categorical",
+            seed=42,
+        )
+
         target_class = random.choice(data.class_names)
         target_dir = os.path.join(data_object, "train", target_class)
         random_image = random.choice(os.listdir(target_dir))
