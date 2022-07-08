@@ -16,17 +16,24 @@ logger = logging.getLogger(__name__)
 class Image_Classifier(object):
     def __init__(
         self,
-        input_object,
+        data_path,
         log_level=log_level,
         plot_level=plot_level,
     ):
         """constructor.
 
         Args:
-            input_object (str, optional): data object. Defaults to "".
+            data_path (str, optional): path to data. Defaults to "".
         """
         self.log_level = log_level
         self.plot_level = plot_level
+
+        data = tf.keras.preprocessing.image_dataset_from_directory(
+            os.path.join(data_path, "train"),
+            image_size=(224, 224),
+            label_mode="categorical",
+            seed=42,
+        )
 
         self.input_shape = (224, 224, 3)
 
@@ -36,7 +43,7 @@ class Image_Classifier(object):
         self.inputs = layers.Input(shape=self.input_shape, name="input_layer")
 
         augmentation_layer = augmentation.create_layer(
-            input_object=input_object,
+            data_path=data_path,
             log_level=log_level - 1,
             plot_level=plot_level - 1,
         )
@@ -46,39 +53,51 @@ class Image_Classifier(object):
 
         x = layers.GlobalAveragePooling2D(name="global_average_pooling_layer")(x)
 
-        self.outputs = layers.Dense(15, activation="softmax", name="output_layer")(x)
+        self.outputs = layers.Dense(
+            len(data.class_names),
+            activation="softmax",
+            name="output_layer",
+        )(x)
 
         self.model = tf.keras.Model(self.inputs, self.outputs)
 
         self.evaluation = None
 
-        if log_level >= LOG_ON:
-            print(self.model.summary())
-
-    def evaluate(
-        self,
-        input_object,
-        test_set="test",
-    ):
         self.model.compile(
             loss="categorical_crossentropy",
             optimizer=tf.keras.optimizers.Adam(),
             metrics=["accuracy"],
         )
 
-        test_data = tf.keras.preprocessing.image_dataset_from_directory(
-            os.path.join(input_object, test_set),
-            image_size=(224, 224),
-            label_mode="categorical",
-            seed=42,
+        if log_level >= LOG_ON:
+            print(self.model.summary())
+
+    def evaluate(
+        self,
+        data_path,
+        test_set="test",
+    ):
+        self.evaluation = self.model.evaluate(
+            tf.keras.preprocessing.image_dataset_from_directory(
+                os.path.join(data_path, test_set),
+                image_size=(224, 224),
+                label_mode="categorical",
+                seed=42,
+            )
         )
 
-        self.evaluation = self.model.evaluate(test_data)
+    def fine_tune(
+        input_object,
+        output_object,
+        epochs=5,
+        train_set="train",
+    ):
+        ...
 
     def fit(
         self,
-        input_object,
-        output_object,
+        data_path,
+        model_path,
         epochs=5,
         train_set="train",
         validation_set="validation",
@@ -88,22 +107,20 @@ class Image_Classifier(object):
         evaluate=True,
     ):
         train_data = tf.keras.preprocessing.image_dataset_from_directory(
-            os.path.join(input_object, train_set),
+            os.path.join(data_path, train_set),
             image_size=(224, 224),
             label_mode="categorical",
             seed=42,
         )
         validation_data = tf.keras.preprocessing.image_dataset_from_directory(
-            os.path.join(input_object, validation_set),
+            os.path.join(data_path, validation_set),
             image_size=(224, 224),
             label_mode="categorical",
             seed=42,
         )
 
         # to speed up - also: callback checkpoints saves don't work w/ load_weight.
-        checkpoint_path = os.path.join(
-            output_object, "image_classifier/checkpoint.ckpt"
-        )
+        checkpoint_path = os.path.join(model_path, "image_classifier/checkpoint.ckpt")
 
         # checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
         #    filepath=checkpoint_path,
@@ -128,37 +145,37 @@ class Image_Classifier(object):
             plot_loss_curves(self.history)
 
         if evaluate:
-            self.evaluate(input_object=input_object, test_set=test_set)
+            self.evaluate(data_path=data_path, test_set=test_set)
 
     def load_weights(
         self,
-        input_object,
-        output_object,
+        data_path,
+        model_path,
         test_set="test",
         evaluate=False,
     ):
         self.model.load_weights(
-            os.path.join(output_object, "image_classifier/checkpoint.ckpt")
+            os.path.join(model_path, "image_classifier/checkpoint.ckpt")
         )
 
         if evaluate:
-            self.evaluate(input_object=input_object, test_set=test_set)
+            self.evaluate(data_path=data_path, test_set=test_set)
 
     def predict_random_image(
         self,
-        input_object,
+        data_path,
         log_level=log_level,
         plot_level=plot_level,
     ):
         data = tf.keras.preprocessing.image_dataset_from_directory(
-            os.path.join(input_object, "train"),
+            os.path.join(data_path, "train"),
             image_size=(224, 224),
             label_mode="categorical",
             seed=42,
         )
 
         target_class = random.choice(data.class_names)
-        target_dir = os.path.join(input_object, "train", target_class)
+        target_dir = os.path.join(data_path, "train", target_class)
 
         image = mpimg.imread(
             os.path.join(target_dir, random.choice(os.listdir(target_dir)))
