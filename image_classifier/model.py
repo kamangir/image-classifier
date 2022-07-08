@@ -4,7 +4,6 @@ import numpy as np
 import random
 import tensorflow as tf
 from tensorflow.keras import layers
-from helper_functions import plot_loss_curves
 from abcli import *
 from . import augmentation
 from abcli import logging
@@ -63,6 +62,8 @@ class Image_Classifier(object):
 
         self.evaluation = None
 
+        self.history = None
+
         self.model.compile(
             loss="categorical_crossentropy",
             optimizer=tf.keras.optimizers.Adam(),
@@ -87,12 +88,68 @@ class Image_Classifier(object):
         )
 
     def fine_tune(
-        input_object,
-        output_object,
-        epochs=5,
+        self,
+        data_path,
+        model_path,
         train_set="train",
+        validation_set="validation",
+        test_set="test",
+        unfreeze_layer_count=10,
+        epochs=5,
+        initial_epoch=1,
+        learning_rate_drop_factor=0.1,
+        evaluate=True,
     ):
-        ...
+        """fine tune self.
+
+        Args:
+            input_object (_type_): _description_
+            output_object (_type_): _description_
+            unfreeze_layer_count (int, optional): number of layers to unfreeze. Defaults to 10.
+            epochs (int, optional): _description_. Defaults to 5.
+            train_set (str, optional): _description_. Defaults to "train".
+            learning_rate_drop_factor (int, optional): drop factor for learning rate. Defaults to 0.1.
+        """
+        self.base_model.trainable = True
+
+        for layer in self.base_model.layers[:-unfreeze_layer_count]:
+            layer.trainable = False
+
+        # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam
+        self.model.compile(
+            loss="categorical_crossentropy",
+            optimizer=tf.keras.optimizers.Adam(0.001 * learning_rate_drop_factor),
+            metrics=["accuracy"],
+        )
+
+        train_data = tf.keras.preprocessing.image_dataset_from_directory(
+            os.path.join(data_path, train_set),
+            image_size=(224, 224),
+            label_mode="categorical",
+            seed=42,
+        )
+        validation_data = tf.keras.preprocessing.image_dataset_from_directory(
+            os.path.join(data_path, validation_set),
+            image_size=(224, 224),
+            label_mode="categorical",
+            seed=42,
+        )
+
+        # Check which layers are trainable
+        # for layer_number, layer in enumerate(model_2.layers[2].layers):
+        #    print(layer_number, layer.name, layer.trainable)
+
+        self.history = self.model.fit(
+            train_data,
+            epochs=epochs,
+            steps_per_epoch=len(train_data),
+            validation_data=validation_data,
+            validation_steps=len(validation_data),
+            initial_epoch=initial_epoch,
+        )
+
+        if evaluate:
+            self.evaluate(data_path=data_path, test_set=test_set)
 
     def fit(
         self,
@@ -142,7 +199,28 @@ class Image_Classifier(object):
         self.model.save_weights(checkpoint_path)
 
         if plot_level >= PLOT_ON:
-            plot_loss_curves(self.history)
+            loss = self.history.history["loss"]
+            val_loss = self.history.history["val_loss"]
+
+            accuracy = self.history.history["accuracy"]
+            val_accuracy = self.history.history["val_accuracy"]
+
+            epochs = range(len(self.history.history["loss"]))
+
+            # Plot loss
+            plt.plot(epochs, loss, label="training_loss")
+            plt.plot(epochs, val_loss, label="val_loss")
+            plt.title("Loss")
+            plt.xlabel("Epochs")
+            plt.legend()
+
+            # Plot accuracy
+            plt.figure()
+            plt.plot(epochs, accuracy, label="training_accuracy")
+            plt.plot(epochs, val_accuracy, label="val_accuracy")
+            plt.title("Accuracy")
+            plt.xlabel("Epochs")
+            plt.legend()
 
         if evaluate:
             self.evaluate(data_path=data_path, test_set=test_set)
